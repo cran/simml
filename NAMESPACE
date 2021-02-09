@@ -2,7 +2,8 @@
 
 export(fit.simml)
 export(generate.data)
+export(ordinal.data)
 export(pred.simml)
 export(simml)
 import(mgcv)
-import(plyr)
+import(stats)
