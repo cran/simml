@@ -4,7 +4,8 @@
 \alias{ordinal.data}
 \title{A function for ordinal categorical response data generation.}
 \usage{
-ordinal.data(n = 400, p = 10, R = 11, delta = 1, s = "nonlinear")
+ordinal.data(n = 400, p = 10, R = 11, delta = 1, s = "nonlinear",
+  sigma = 0)
 }
 \arguments{
 \item{n}{sample size.}
@@ -16,6 +17,8 @@ ordinal.data(n = 400, p = 10, R = 11, delta = 1, s = "nonlinear")
 \item{delta}{magnitude of "main" effect (i.e., "nuisance" effect) of the covariates; a large delta means a larger "nuisance" variance.}
 
 \item{s}{type of the treatment-by-covariates interation effect ("linear" or "nonlinear")}
+
+\item{sigma}{noise sd in the latent variable representation}
 }
 \value{
 \item{y}{a n-by-1 vector of treatment outcomes.}

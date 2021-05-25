@@ -4,31 +4,34 @@
 \alias{simml}
 \title{Single-index models with multiple-links (main function)}
 \usage{
-simml(y, A, X, Xm = NULL, family = "gaussian", R = NULL, bs = "cr",
-  k = 8, sp = NULL, linear.link = FALSE, method = "GCV.Cp",
-  gamma = 1, beta.ini = NULL, ind.to.be.positive = NULL,
-  max.iter = 20, eps.iter = 0.01, trace.iter = TRUE, lambda = 0,
-  pen.order = 0, scale.X = TRUE, center.X = TRUE,
-  ortho.constr = TRUE, si.main.effect = FALSE, random.effect = FALSE,
-  z = NULL, bootstrap = FALSE, nboot = 200, boot.conf = 0.95,
+simml(y, A, X, Xm = NULL, aug = NULL, family = "gaussian",
+  R = NULL, bs = "cr", k = 8, sp = NULL, linear.link = FALSE,
+  method = "GCV.Cp", gamma = 1, rho = 0, beta.ini = NULL,
+  ind.to.be.positive = NULL, scale.si.01 = FALSE, max.iter = 20,
+  eps.iter = 0.01, trace.iter = TRUE, lambda = 0, pen.order = 0,
+  scale.X = TRUE, center.X = TRUE, ortho.constr = TRUE,
+  si.main.effect = FALSE, random.effect = FALSE, z = NULL,
+  plots = FALSE, bootstrap = FALSE, nboot = 200, boot.conf = 0.95,
   seed = 1357)
 }
 \arguments{
 \item{y}{a n-by-1 vector of treatment outcomes; y is a member of the exponential family; any distribution supported by \code{mgcv::gam}; y can also be an ordinal categorial response with \code{R} categories taking a value from 1 to \code{R}.}
 
-\item{A}{a n-by-1 vector of treatment variable; each element is assumed to take a value on a continuum.}
+\item{A}{a n-by-1 vector of treatment variable; each element is assumed to take a value in a finite discrete space.}
 
 \item{X}{a n-by-p matrix of baseline covarates.}
 
 \item{Xm}{a n-by-q design matrix associated with an X main effect model; the defult is \code{NULL} and it is taken as a vector of zeros}
 
+\item{aug}{a n-by-1 additional augmentation vector associated with the X main effect; the default is \code{NULL} and it is taken as a vector of zeros}
+
 \item{family}{specifies the distribution of y; e.g., "gaussian", "binomial", "poisson"; can be any family supported by \code{mgcv::gam}; can also be "ordinal", for an ordinal categorical response y.}
 
 \item{R}{the number of response categories for the case of family = "ordinal".}
 
-\item{bs}{basis type for the treatment (A) and single-index domains, respectively; the defult is "ps" (p-splines); any basis supported by \code{mgcv::gam} can be used, e.g., "cr" (cubic regression splines); see \code{mgcv::s} for detail.}
+\item{bs}{basis type for the treatment (A) and single-index joint effect; the defult is "ps" (p-splines); any basis supported by \code{mgcv::gam} can be used, e.g., "cr" (cubic regression splines); see \code{mgcv::s} for detail.}
 
-\item{k}{basis dimension for the treatment (A) and single-index domains, respectively.}
+\item{k}{basis dimension for the spline-type-represented treatment-specific link functions.}
 
 \item{sp}{smoothing paramter for the treatment-specific link functions; if \code{NULL}, then estimated from the data.}
 
@@ -38,9 +41,13 @@ simml(y, A, X, Xm = NULL, family = "gaussian", R = NULL, bs = "cr",
 
 \item{gamma}{increase this beyond 1 to produce smoother models. \code{gamma} multiplies the effective degrees of freedom in the GCV or UBRE/AIC (see \code{mgcv::gam} for detail); the default is 1.}
 
+\item{rho}{a tuning parameter associated with the additional augmentation vector \code{aug}; the default is 0.}
+
 \item{beta.ini}{an initial value for \code{beta.coef}; a p-by-1 vector; the defult is \code{NULL}, in which case a linear model estimate is used.}
 
 \item{ind.to.be.positive}{for identifiability of the solution \code{beta.coef}, the user can restrict the jth (e.g., j=1) component of \code{beta.coef} to be positive; by default, we match the "overall" sign of \code{beta.coef} with that of the linear estimate (i.e., the initial estimate), by restricting the inner product between the two to be positive.}
+
+\item{scale.si.01}{if \code{TRUE}, re-scale the index coefficients to restrict the index to the interval [0,1]; in such a case, an intercept term is induced.}
 
 \item{max.iter}{an integer specifying the maximum number of iterations for \code{beta.coef} update.}
 
@@ -48,7 +55,7 @@ simml(y, A, X, Xm = NULL, family = "gaussian", R = NULL, bs = "cr",
 
 \item{trace.iter}{if \code{TRUE}, trace the estimation process and print the differences in \code{beta.coef}.}
 
-\item{lambda}{a regularization parameter associated with the penalized LS for \code{beta.coef} update.}
+\item{lambda}{a regularization parameter associated with the penalized LS for \code{beta.coef} update; the default is 0, and the index coefficients are not penalized.}
 
 \item{pen.order}{0 indicates the ridge penalty; 1 indicates the 1st difference penalty; 2 indicates the 2nd difference penalty, used in a penalized least squares (LS) estimation of \code{beta.coef}.}
 
@@ -63,6 +70,8 @@ simml(y, A, X, Xm = NULL, family = "gaussian", R = NULL, bs = "cr",
 \item{random.effect}{if \code{TRUE}, as part of the main effects, the user can incorporate z-specific random intercepts.}
 
 \item{z}{a factor that specifies the random intercepts when \code{random.effect = TRUE}.}
+
+\item{plots}{if \code{TRUE}, produce a plot for the estimated effect contrast (for binary treatment cases) (on a linear predictor scale).}
 
 \item{bootstrap}{if \code{TRUE}, compute bootstrap confidence intervals for the single-index coefficients, \code{beta.coef}; the default is \code{FALSE}.}
 
@@ -162,14 +171,14 @@ plot1 + l_fitLine(colour = "red") + l_rug(mapping = aes(x=x, y=y), alpha = 0.8) 
   l_ciLine(mul = 5, colour = "blue", linetype = 2) +
   l_points(shape = 19, size = 1, alpha = 0.1) +
   xlab(expression(paste("z = ", alpha*minute, "x")))  +  ylab("y") +
-  ggtitle("Treatment group 1 (Tr =1)") +  theme_classic()
+  ggtitle("Treatment group 1 (Trt =1)") +  theme_classic()
 
 plot2 <- plot( sm(g.fit,2) )   # for treatment group 2
 plot2 + l_fitLine(colour = "red") + l_rug(mapping = aes(x=x, y=y), alpha = 0.8) +
   l_ciLine(mul = 5, colour = "blue", linetype = 2) +
   l_points(shape = 19, size = 1, alpha = 0.1) +
   xlab(expression(paste("z = ", alpha*minute, "x"))) +ylab("y") +
-  ggtitle("Treatment group 2 (Tr =2)") + theme_classic()
+  ggtitle("Treatment group 2 (Trt =2)") + theme_classic()
 
 
 trans = function(x) x + g.fit$coefficients[2]
@@ -185,18 +194,18 @@ plotDiff(s1 = sm(g.fit, 2), s2 = sm(g.fit, 1), trans=trans) +  l_ciPoly() +
 #library(ggplot2)
 dat  <- data.frame(y= simml.obj1$g.fit$model$y,
                    x= simml.obj1$g.fit$model$single.index,
-                   Treatment= simml.obj1$g.fit$model$Tr)
+                   Treatment= simml.obj1$g.fit$model$A)
 g.plot<- ggplot(dat, aes(x=x,y=y,color=Treatment,shape=Treatment,linetype=Treatment))+
    geom_point(aes(color=Treatment, shape=Treatment), size=1, fill="white") +
-   scale_colour_brewer(palette="Set1", direction=-1) + theme_classic() +
-   xlab(expression(paste(alpha*minute,"x"))) + ylab("y")
+   scale_colour_brewer(palette="Set1", direction=-1) +
+   xlab(expression(paste(beta*minute,"x"))) + ylab("y")
 g.plot + geom_smooth(method=gam, formula= y~ s(x, bs=simml.obj1$bs, k=simml.obj1$k),
                      se=TRUE, fullrange=TRUE, alpha = 0.35)
 }
 
 \donttest{
 # can obtain bootstrap CIs for beta.coef.
-simml.obj <- simml(y,Tr,X,Xm=X, family=family,bootstrap=TRUE,nboot=15)  #nboot=500.
+simml.obj <- simml(y,A,X,Xm=X, family=family,bootstrap=TRUE,nboot=15)  #nboot=500.
 simml.obj$beta.coef
 round(simml.obj$boot.ci,3)
 
@@ -207,7 +216,7 @@ data$true.beta
 
 # an application to data with ordinal categorical response
 dat <- ordinal.data(n=500, p=5, R = 11,  # 11 response levels
-                   s = "nonlinear",   # nonlinear interactions
+                   s = "nonlinear",     # nonlinear interactions
                    delta = 1)
 dat$SNR
 y <- dat$y  # ordinal response
@@ -215,19 +224,20 @@ X <- dat$X  # X matrix
 A <- dat$A  # treatment
 dat$true.beta  # the "true" single-index coefficient
 
+\donttest{
 # 1) fit a cumulative logit simml, with a flexible link function
 res <-  simml(y,A,X, family="ordinal", R=11)
 res$beta.coef  # single-index coefficients.
 res$g.fit$family$getTheta(TRUE)  # the estimated R-1 threshold values.
-
+}
 # 2) fit a cumulative logit simml, with a linear link function
 res2 <-  simml(y,A,X, family="ordinal", R=11, linear.link = TRUE)
 res2$beta.coef  # single-index coefficients.
 
 \donttest{
-family = ocat(R=11)  # ocat: ordered categorical response family, with R categories.
+family = mgcv::ocat(R=11)  # ocat: ordered categorical response family, with R categories.
 # the treatment A's effect.
-tmp <- mgcv::gam(y ~ A, family = family)
+tmp <- mgcv::gam(y ~ A, family =family)
 exp(coef(tmp)[2])  #odds ratio (OR) comparing treatment A=2 vs. A=1.
 
 ind2 <- pred.simml(res)$trt.rule ==2  # subgroup recommended with A=2 under SIMML ITR
