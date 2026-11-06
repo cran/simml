@@ -115,50 +115,7 @@
 #' g.fit <- simml.obj1$g.fit   # estimated trt-specific link functions; "g.fit" is a mgcv::gam object.
 #' #plot(g.fit)
 #'
-#'\donttest{
-#' # can improve visualization by using the package "mgcViz"
-#' #install.packages("mgcViz")
-#' # mgcViz depends on "rgl". "rgl" depends on XQuartz, which you can download from xquartz.org
-#' #library(mgcViz)
-#' # transform the "mgcv::gam" object to a "mgcViz" object (to improve visualization)
-#' g.fit <- getViz(g.fit)
-#'
-#' plot1  <- plot( sm(g.fit,1) )  # for treatment group 1
-#' plot1 + l_fitLine(colour = "red") + l_rug(mapping = aes(x=x, y=y), alpha = 0.8) +
-#'   l_ciLine(mul = 5, colour = "blue", linetype = 2) +
-#'   l_points(shape = 19, size = 1, alpha = 0.1) +
-#'   xlab(expression(paste("z = ", alpha*minute, "x")))  +  ylab("y") +
-#'   ggtitle("Treatment group 1 (Trt =1)") +  theme_classic()
-#'
-#' plot2 <- plot( sm(g.fit,2) )   # for treatment group 2
-#' plot2 + l_fitLine(colour = "red") + l_rug(mapping = aes(x=x, y=y), alpha = 0.8) +
-#'   l_ciLine(mul = 5, colour = "blue", linetype = 2) +
-#'   l_points(shape = 19, size = 1, alpha = 0.1) +
-#'   xlab(expression(paste("z = ", alpha*minute, "x"))) +ylab("y") +
-#'   ggtitle("Treatment group 2 (Trt =2)") + theme_classic()
-#'
-#'
-#' trans = function(x) x + g.fit$coefficients[2]
-#' plotDiff(s1 = sm(g.fit, 2), s2 = sm(g.fit, 1), trans=trans) +  l_ciPoly() +
-#'   l_fitLine() + geom_hline(yintercept = 0, linetype = 2) +
-#'   xlab(expression(paste("z = ", alpha*minute, "x")) ) +
-#'   ylab("(Treatment 2 effect) - (Treatment 1 effect)") +
-#'   ggtitle("Contrast between two treatment effects") +
-#'   theme_classic()
-#'
-#'
-#' # yet another way of visualization, using ggplot2
-#' #library(ggplot2)
-#' dat  <- data.frame(y= simml.obj1$g.fit$model$y,
-#'                    x= simml.obj1$g.fit$model$single.index,
-#'                    Treatment= simml.obj1$g.fit$model$A)
-#' g.plot<- ggplot(dat, aes(x=x,y=y,color=Treatment,shape=Treatment,linetype=Treatment))+
-#'    geom_point(aes(color=Treatment, shape=Treatment), size=1, fill="white") +
-#'    scale_colour_brewer(palette="Set1", direction=-1) +
-#'    xlab(expression(paste(beta*minute,"x"))) + ylab("y")
-#' g.plot + geom_smooth(method=gam, formula= y~ s(x, bs=simml.obj1$bs, k=simml.obj1$k),
-#'                      se=TRUE, fullrange=TRUE, alpha = 0.35)
-#'}
+#' plot(g.fit, pages = 1)
 #'
 #'\donttest{
 #' # can obtain bootstrap CIs for beta.coef.
@@ -378,6 +335,8 @@ fit.simml <- function(y,   # a n x 1 vector of observed responses; if family = "
                       z= NULL, plots=FALSE)
 {
 
+  gam.fit <- NULL
+  
   n <- length(y)
   p <- ncol(X)
   A <- as.factor(A)        # A is a categorical variable.

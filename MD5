@@ -1,10 +1,11 @@
-0482df40aeb1fcc09d9b09a4d6f0b946 *DESCRIPTION
+81e10c44db07cc17e4b46ef092ea50e6 *DESCRIPTION
 f69011bd95286e35f24f35399bd9ff3e *NAMESPACE
 559f307c3e75bf8d7f368b724950f7b3 *R/hello.R
-ddce406758600bb6482add57195596ac *R/simml.main.R
+8effc2e0b2f0e0eacbfd86cbd27b8f3b *R/simml.main.R
 ffc09d0bf6a694800555221fc2ec7f1e *man/der.link.Rd
 461c96ca1969b39acdab521cb2922061 *man/fit.simml.Rd
 cd7f8e8b66a5cb00908f9f109c72894f *man/generate.data.Rd
 17b08d6b43865a05dc36093217db8426 *man/ordinal.data.Rd
 a0a8629d82f67b29c69a3f0730739996 *man/pred.simml.Rd
-1fb9425345b7a6191265dc73f90a13da *man/simml.Rd
+a397c6401df4167803ccb6e652f8b88a *man/simml.Rd
+93d5ff1e91437a03fad050305d9eff10 *tests/gam-fit.R
